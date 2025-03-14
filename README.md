@@ -8,4 +8,4 @@ This repository would be dedicated for the practical material dictated in the te
 | Section | Name | GitHub | Email |
 | ----- | ----- | ----- | ---- |
 | 101 | Franco Antonucci | null | franco.antonucci@usm.cl |
-| 102 | Diego Bernal | Diego-bernals | diego.bernals@usm.cl |
+| 101 | Diego Bernal | Diego-bernals | diego.bernals@usm.cl |
