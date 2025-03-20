@@ -10,10 +10,8 @@ install.packages("tidyverse") #Meta package that brings a lot of functions jejej
 install.packages("sswr")
 
 install.packages("remotes")  # If not already installed
-remotes::install_github("DickBrus/sswr")  # Replace 'username' with the actual repository owner
-
-library(remotes)
-install_github("DickBrus/sswr")
+#remotes::install_github("username/sswr") # Replace 'username' with the actual repository owner https://github.com/DickBrus
+remotes::install_github("DickBrus/sswr")  
 library(tidyverse) #We have to activate the libraries
 library(sswr)
 
