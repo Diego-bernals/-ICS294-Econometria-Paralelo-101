@@ -1,0 +1,424 @@
+---
+author: "Diego Bernal Soto: diego.bernals@usm.cl"
+title: "Ayudantía 2 - Regresión Lineal"
+output: 
+  tufte::tufte_html:
+    highlight: pygments
+link-citations: yes
+editor_options:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+## Introducción
+
+Es sabido que la regresión simple supone que el fenómeno en estudio sigue una tendencia lineal de la forma:
+
+$$
+y = ax + b
+$$
+
+Donde $y$ es una variable independiente, $x$ una variable dependiente, y $a, b$ son parámetros a determinar.
+Considerando que $y_i = ax_i + b + \varepsilon_i$, estos parámetros son escogidos de forma que la suma del cuadrado de los errores $\varepsilon_i$, provenientes de la observación $i$, sea mínima.
+
+$$
+a = \frac{\sum_{i=1}^{n} x_i y_i - n \bar{x} \bar{y}}{\sum_{i=1}^{n} x_i^2 - n \bar{x}^2}
+$$
+
+$$
+b = \bar{y} - a \bar{x}
+$$
+
+Como hay que minimizar la suma de los errores al cuadrado, notando que $\varepsilon_i = y_i - ax_i - b$, se tiene que:
+
+$$
+\sum_{i=1}^{n} \varepsilon_i^2 = \sum_{i=1}^{n} (y_i - ax_i - b)^2
+$$
+
+$$
+= \sum_{i=1}^{n} \left( y_i^2 + a^2 x_i^2 + b^2 - 2a x_i y_i - 2b y_i + 2ab x_i \right)
+$$
+
+$$
+= \sum_{i=1}^{n} y_i^2 + a^2 \sum_{i=1}^{n} x_i^2 + n b^2 - 2a \sum_{i=1}^{n} x_i y_i - 2b \sum_{i=1}^{n} y_i + 2ab \sum_{i=1}^{n} x_i
+$$
+
+Entonces se busca minimizar:
+
+$$
+\min_{a, b \in \mathbb{R}} \left( \sum_{i=1}^{n} y_i^2 + a^2 \sum_{i=1}^{n} x_i^2 + n b^2 - 2a \sum_{i=1}^{n} x_i y_i - 2b \sum_{i=1}^{n} y_i + 2ab \sum_{i=1}^{n} x_i \right)
+$$
+
+### Condiciones de primer orden (CPO)
+
+Derivando con respecto a $a$:
+
+$$
+\frac{d}{da}: 2a \sum_{i=1}^{n} x_i^2 - 2 \sum_{i=1}^{n} x_i y_i + 2b \sum_{i=1}^{n} x_i = 0
+$$
+
+Derivando con respecto a $b$:
+
+$$
+\frac{d}{db}: 2n b - 2 \sum_{i=1}^{n} y_i + 2a \sum_{i=1}^{n} x_i = 0
+$$
+
+### Trabajamos la segunda condición:
+
+Multiplicando por $\frac{1}{2}$:
+
+$$
+n b - \sum_{i=1}^{n} y_i + a \sum_{i=1}^{n} x_i = 0
+$$
+
+Despejando:
+
+$$
+n b = \sum_{i=1}^{n} y_i - a \sum_{i=1}^{n} x_i
+$$
+
+$$
+b = \frac{1}{n} \sum_{i=1}^{n} y_i - \frac{a}{n} \sum_{i=1}^{n} x_i
+$$
+
+$$
+b = \bar{y} - a \bar{x}
+$$
+
+### Reemplazamos en la primera ecuación:
+
+$$
+a \sum_{i=1}^{n} x_i^2 - \sum_{i=1}^{n} x_i y_i + b \sum_{i=1}^{n} x_i = 0
+$$
+
+Sustituyendo $b = \bar{y} - a \bar{x}$:
+
+$$
+a \sum_{i=1}^{n} x_i^2 - \sum_{i=1}^{n} x_i y_i + (\bar{y} - a \bar{x}) \sum_{i=1}^{n} x_i = 0
+$$
+
+$$
+a \sum_{i=1}^{n} x_i^2 - \sum_{i=1}^{n} x_i y_i + \bar{y} \sum_{i=1}^{n} x_i - a \bar{x} \sum_{i=1}^{n} x_i = 0
+$$
+
+Agrupando términos:
+
+$$
+a \left( \sum_{i=1}^{n} x_i^2 - \bar{x} \sum_{i=1}^{n} x_i \right) = \sum_{i=1}^{n} x_i y_i - \bar{y} \sum_{i=1}^{n} x_i
+$$
+
+Recordando que $\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i$, se tiene:
+
+$$
+a \left( \sum_{i=1}^{n} x_i^2 - n \bar{x}^2 \right) = \sum_{i=1}^{n} x_i y_i - n \bar{y} \bar{x}
+$$
+
+Finalmente:
+
+$$
+a = \frac{\sum_{i=1}^{n} x_i y_i - n \bar{y} \bar{x}}{\sum_{i=1}^{n} x_i^2 - n \bar{x}^2}
+$$
+
+Lo que se parece a lo siguiente:
+
+$$
+a = \frac{\text{COV}(X, Y)}{\text{VAR}(X)}
+$$
+
+## Matematicos II
+
+Sean $D$ y $M$ variables aleatorias independientes e idénticamente distribuidas.
+Supongamos que:
+
+$$
+Y = bD + M
+$$
+
+Queremos encontrar el valor de $b$ tal que la correlación entre $D$ y $Y$ sea $\frac{1}{3}$:
+
+$$
+\text{CORR}(D,Y)=\frac{\text{COV}(D,Y)}{\sqrt{\text{VAR}(D)\text{VAR}(Y)}}
+$$
+
+### Cálculo de la covarianza
+
+$$
+\text{COV}(D,Y)=E[(D-E(D))(Y-E(Y))]
+$$
+
+Desarrollamos:
+
+$$
+= E(DY - D E(Y) - Y E(D) + E(D)E(Y))
+$$
+
+$$
+= E(DY) - E(D)E(Y) - E(Y)E(D) + E(D)E(Y)
+$$
+
+$$
+= E(DY) - E(D)E(Y)
+$$
+
+Sustituimos $Y = bD + M$:
+
+$$
+= E(D(bD + M)) - E(D)E(bD + M)
+$$
+
+$$
+= bE(D^2) + E(DM) - bE^2(D) - E(D)E(M)
+$$
+
+Dado que $D$ y $M$ son independientes, se cumple que $E(DM) = E(D)E(M)$.
+Por lo tanto:
+
+$$
+E(DM) - E(D)E(M) = 0
+$$
+
+Entonces:
+
+$$
+\text{COV}(D,Y) = bE(D^2) - bE^2(D)
+$$
+
+$$
+= b(E(D^2) - E^2(D)) = b \cdot \text{VAR}(D)
+$$
+
+### Sustituyendo en la correlación
+
+$$
+\text{CORR}(D,Y) = \frac{b \cdot \text{VAR}(D)}{\sqrt{\text{VAR}(D) \cdot \text{VAR}(Y)}} = \frac{1}{3}
+$$
+
+### Cálculo de la varianza de $Y$
+
+Por propiedad de la varianza para variables independientes:
+
+$$
+\text{VAR}(Y) = \text{VAR}(bD + M) = b^2 \cdot \text{VAR}(D) + \text{VAR}(M)
+$$
+
+Volvemos a la ecuación de correlación:
+
+$$
+b \cdot \text{VAR}(D) = \frac{1}{3} \sqrt{\text{VAR}(D) \cdot (b^2 \cdot \text{VAR}(D) + \text{VAR}(M))}
+$$
+
+Multiplicamos ambos lados por 3:
+
+$$
+3b \cdot \text{VAR}(D) = \sqrt{\text{VAR}(D)(b^2 \cdot \text{VAR}(D) + \text{VAR}(M))}
+$$
+
+Elevamos al cuadrado ambos lados:
+
+$$
+9b^2 \cdot \text{VAR}(D)^2 = \text{VAR}(D)(b^2 \cdot \text{VAR}(D) + \text{VAR}(M))
+$$
+
+$$
+9b^2 \cdot \text{VAR}(D)^2 = b^2 \cdot \text{VAR}(D)^2 + \text{VAR}(D) \cdot \text{VAR}(M)
+$$
+
+$$
+8b^2 \cdot \text{VAR}(D)^2 = \text{VAR}(D) \cdot \text{VAR}(M)
+$$
+
+$$
+8b^2 = \frac{\text{VAR}(M)}{\text{VAR}(D)}
+$$
+
+Finalmente, despejamos $b$:
+
+$$
+b = \frac{\sqrt{\text{VAR}(M)}}{2\sqrt{2}\sqrt{\text{VAR}(D)}}
+$$
+
+# Función de perdida
+
+Si volvemos al inicio de este problema, nosotros buscamos obtener la mejor linea $(w,b)$ que se ajuste a nuestros datos, pero como cuantificamos la mejor linea?
+
+$$
+t^{(i)} \approx y^{(i)} = w^Tx^{(i)} + b
+$$
+
+la funcion de perdida nos describe que tan mal esta, $\mathcal{L}(y, t)$.
+
+\$ \mathcal{L}(y, t) = \frac{1}{2}(y - t)\^2 \$
+
+De forma vectorizada.
+
+$$
+\frac{1}{2N} \sum_{i=1}^{N} \left( \mathbf{w}^\top \mathbf{x}^{(i)} + b - t^{(i)} \right)^2
+$$
+
+# Notación
+
+Nos gustaria organizar toda nuestra data generada dentro de una matriz de diseño $X$ con una fila para cada observación y una columna para cada caracteristica (feature) y nuestros valores a objetivo dentro de un vector.
+
+Podemos definir estos inputs como:
+
+$$
+\mathbf{X} =
+\begin{pmatrix}
+x^{(0)} \\
+x^{(1)} \\
+\vdots \\
+x^{(m-1)}
+\end{pmatrix}
+=
+\begin{pmatrix}
+3 & 2 & 3\\
+4 & 4 & 2\\
+5 & 6 & 1\\
+6 & 8 & 4
+\end{pmatrix}
+$$
+
+Para cada observacion $x$ por si misma es un vector:
+
+$$
+\begin{align}
+x = [x_0, x_1, \dots x_{n-1}]
+\end{align}
+$$
+
+De forma similar podemos indexar los $y^{(i)}$ en Y, como un un vector traspuesto de la forma:
+
+$$
+\mathbf{Y} =
+\begin{pmatrix}
+y^{(0)} \\
+y^{(1)} \\
+\vdots \\
+y^{(m-1)}
+\end{pmatrix}
+$$
+
+Los parametros o pesos a aprender se caracterizn con la letra w de forma vectorial los podriamo sescribir de la siguiente forma:
+
+\$\$
+
+w = (W_1 + \dots, w_D)\^T \$\$
+
+Ordenando los terminos quedariamos con lo siguiente:
+
+$$
+\mathbf{Xw + b_1} = 
+\begin{pmatrix}
+w^{T}x^{(1)} + b\\ 
+w^{T}x^{(2)} + b\\ 
+\vdots \\
+w^{T}x^{(N)} + b\\ 
+\end{pmatrix}
+= \begin{pmatrix}
+y^{(1)} \\
+\vdots \\
+y^{(n)}
+\end{pmatrix}
+= y
+$$
+
+Si consideramos una una columna que sea solo de 1's, se puede reescribir el modelo de la siguiente forma:
+
+$$
+X 
+=
+\begin{pmatrix}
+1 & [x^{(1)}]^T \\
+1 & [x^{(2)}]^T \\
+1 & \vdots 
+\end{pmatrix} ∈ R^{Nx(D + 1)}
+\space 
+and
+\space 
+w = 
+\begin{pmatrix}
+b \\
+w_1\\
+w_2 \\
+\vdots
+\end{pmatrix}
+∈ R^{D+1}
+$$
+
+# Problema de minimización
+
+Buscamos generar la mejor linea o hiprplano, que se ajuste a nuestros datos.
+si definimos la **función de costo**.
+que cuantifica que tan mal nuestro modelo (h(x)) predice las salidas.
+
+$$
+\mathcal{L}(y, t) = \frac{1}{2}(y - t)^2
+$$
+
+Y al extenderla a todo el conjunto tenemos:
+
+$$
+J(w, b) = \frac{1}{2N} \sum_{i=1}^{N} \left( \mathbf{w}^\top \mathbf{x}^{(i)} + b - t^{(i)} \right)^2
+$$
+
+Nuestro objetivo es encontrar los parámetros $\mathbf{w}, b$ que **minimicen** esta función.
+
+## Enfoques para Minimizar
+
+Existen dos enfoques matemáticos comunes para resolver problemas de minimización:
+
+-   **Algebraico**: se demuestra que un punto $z^*$ es mínimo probando que para todo $z$, se cumple $f(z) \geq f(z^*)$.
+-   **Cálculo**: se encuentra un mínimo local buscando los puntos donde la derivada (o el gradiente en el caso multivariado) es cero. Es decir, puntos críticos.
+
+En nuestro caso, al ser la función $J(w, b)$ suave y convexa, podemos encontrar una solución exacta resolviendo:
+
+$$
+\nabla J(w, b) = 0
+$$
+
+## Solución Directa: Proyección Ortogonal
+
+Vamos a resolver el problema utilizando álgebra lineal y la **proyección ortogonal**.
+Para ello, representamos nuestros datos en forma matricial.
+
+Sea:
+
+-   $X \in \mathbb{R}^{N \times (D+1)}$ la **matriz de diseño**, donde cada fila corresponde a una observación $\mathbf{x}^{(i)}$, y se agrega una columna adicional de unos para representar el término independiente $b$.
+-   $Y \in \mathbb{R}^{N}$ el vector de valores objetivo.
+-   $w \in \mathbb{R}^{D+1}$ el vector de parámetros, incluyendo el sesgo.
+
+Entonces, nuestra función de predicción se puede escribir como:
+
+$$
+\hat{Y} = Xw
+$$
+
+Y la función de costo como:
+
+$$
+J(w) = \frac{1}{2} \| Xw - Y \|^2
+$$
+
+El vector $w^*$ que minimiza esta función es el que proyecta ortogonalmente $Y$ sobre el espacio columna de $X$.
+Esta condición se expresa como:
+
+$$
+X^\top (Xw^* - Y) = 0
+$$
+
+Resolviendo esta ecuación, obtenemos:
+
+$$
+X^\top X w^* = X^\top Y
+$$
+
+Y si $X^\top X$ es invertible:
+
+$$
+w^* = (X^\top X)^{-1} X^\top Y
+$$
+
+Esta solución corresponde a la **proyección ortogonal** de $Y$ sobre el subespacio generado por las columnas de $X$.
+Geométricamente, se busca el punto en ese subespacio que está más cerca (en norma euclidiana) del vector $Y$.
+El vector de residuos $Y - Xw^*$ es **ortogonal** a dicho subespacio.
