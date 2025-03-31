@@ -1,0 +1,270 @@
+---
+title: "Ayudantía 3 - Regresión Lineal ..."
+author: 'Diego Bernal Soto: diego.bernals@usm.cl'
+output: 
+  tufte::tufte_html:
+    highlight: pygments
+link-citations: yes
+editor_options:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+# Definiciones
+
+1.  **Suma Cadrada total (SST)**: Estadistico que da cuenta de la variabilidad de un conjunto de *n* mediciones agrupaddas en *i-grupos*, con *j* elementos cada uno. Cabe señalar que j es constante para todos los gruposa analizar. Matematicamente se escribe asi.
+
+$$
+{\sum_{i=1}^{n} (y_i - \bar{
+y})^2}
+$$
+
+Como es una suma general del conjunto, esta se puede descomponer en 2 analisis distintos.
+Entre losgrupos y dentro de ellos.
+
+2.  **Suma inter grupos (SSW)**: Este estadastico que representa la variabilidad interna de cada grupo, cuanto se dispersa cada observacion individual respecto al promedio del grupo. ¿Que pasa si este valor es pequeño?.
+
+$$
+{\sum_{i=1}^{I}\sum_{j=1}^{J}(Y_{ij}- \bar{Y_i})^2}
+$$ 3.
+**Suma entre grupos (SSB)**: Estadistico mide la variabilidad entre grupos, que tanto cambian los promedios de cada grupo con respecto al promedio general.¿Que ocurre si el valor es alto?.
+
+$$
+{\sum_{i=1}^{I}\sum_{j=1}^{J}(Y_{i}- \bar{Y})^2}
+$$
+
+4.  **Error cuadratico medio (MSE)** : Función que nospermite cuantificar que tan bien se ajusta nuestro modelo a la f(x) en relación a los valores predichos.
+
+$$
+J(w) = \frac{1}{2} \| Xw - Y \|^2
+$$
+
+# Matematico
+
+Show that the sum of squares decomposition and F-statistic reduces to the equal-variance (pooled) two samples t-test in the case of $\alpha = 2$ treatments with the realization that an F-statistic with 1 numerator and k denominators.
+degrees of freedom is equivalent to a t-statistic with 1 numerator and k degrees of freedom, viz
+
+$$
+F_{1, k} = t_{k}^2
+$$
+
+$$
+F_{\alpha-1, N - \alpha} = \frac{MST}{MSE} = \frac{\frac{SST}{\alpha-1}}{\frac{SSE}{N-\alpha}}
+$$
+
+Reduces
+
+$$
+t_k^2 = \frac{(\bar{y}_1 - \bar{y}_2)^2}{S_p^2 \left( \frac{1}{n_1} + \frac{1}{n_2} \right)} 
+\quad ; \quad
+t_k = \frac{\bar{y}_1 - \bar{y}_2}{S_p \sqrt{ \frac{1}{n_1} + \frac{1}{n_2} }}
+$$
+
+Cuando $\alpha = 2$
+
+$$
+MSE = \frac{SSE}{N-2} = \frac{\sum_{j=1}^{n_1}(y_{1j}-\bar{y_1})^2+\sum_{j=1}^{n_1}(y_{2j}-\bar{y_2})^2}
+{N-2}
+$$
+
+Recordando q la formula de la varianza de la muestra estimada es:
+
+$$
+S_{i}^2 = \frac{\sum_{j=1}^{n_i}(y_{ij}-\bar{y_i})^2}{n_i-1}
+$$
+
+$$
+\frac{\sum_{j=1}^{n_1}(y_{1j}-\bar{y_1})^2+\sum_{j=1}^{n_1}(y_{2j}-\bar{y_2})^2}
+{N-2} \space * \frac{n_i-1}{n_i-1}
+$$
+
+$$
+\frac{\sum_{j=1}^{n_1}(y_{1j}-\bar{y_1})^2 *(n_i-1)+\sum_{j=1}^{n_2}(y_{2j}-\bar{y_2})^2*(n_i-1)}
+{(n_1+n_2-2)*(n_i-1)} 
+$$
+
+$$
+\frac{SSE}{N-2} = \frac{(n_1-1)S_{1}^2+ (n_2 -1)S_{2}^2}{n_1+n_2-2} = S_p
+$$
+
+$$ 
+\frac{SST}{2-1} = SST \to \sum\_{1}^{2}n_i(^\bar{y_i}-\bar{y})2 \space = n_1(\bar{y_1}-\bar{y})^2 + n_2(\bar{y_2}-\bar{y})^2 
+$$
+
+$$y_t \to global\space mean$$
+
+$$
+\bar{y} = \frac{n_1\bar{y_1}+n_2\bar{y_2}}{N}
+$$
+
+$$
+SST = n_1(\bar{y_1} - (\frac{n_1\bar{y_1} + n_2\bar{y_2}}{N}))^2 + 
+n_2(\bar{y_2} - (\frac{n_1\bar{y_1} + n_2\bar{y_2}}{N}))^2
+$$
+
+Trabajemos con la primera
+
+$$
+n_1(\bar{y_1} - (\frac{n_1\bar{y_1} + n_2\bar{y_2}}{N}))^2
+$$
+
+$$
+n_1(\frac{N\bar{y_1}}{N} - (\frac{n_1\bar{y_1} + n_2\bar{y_2}}{N}))^2
+$$
+
+$$
+n_1(\frac{N\bar{y_1} - n_1\bar{y_1}-n_2\bar{y_2}}{N})^2
+$$
+
+$$
+n_1(\frac{(n_1+n_2)\bar{y_1} - n_1\bar{y_1}-n_2\bar{y_2}}{N})^2
+$$
+
+Recuciendo
+
+$$
+n_1(\frac{n_2\bar{y_1} + n_2\bar{y_2}}{N})^2
+$$
+
+$$
+\frac{n_1n_{2}^2(\bar{y_1}+\bar{y_2})^2}{N^2}
+$$
+
+El otro termino se deja para que el estudiante suelte la mano...
+
+$$
+SST = \frac{n_1n_{2}^2(\bar{y_1}+\bar{y_2})^2}{N^2} + \frac{n_2n_{1}^2(\bar{y_1}+\bar{y_2})^2}{N^2}
+$$
+
+$$
+\frac{n_1n_{2}^2}{N^2} + \frac{n_2n_{1}^2}{N^2} \to \frac{(n_1+n_2)n_1n_2}{N^2}
+$$
+
+$$
+\frac{n_1n_2}{N} \to \frac{1}{\frac{N}{n_1n_2}} \to \frac{1}{\frac{1}{n_1} + \frac{1}{n_2}}
+$$
+
+$$
+SST = \frac{1}{\frac{1}{n_1} + \frac{1}{n_2}} * (\bar{y_1} - \bar{y_2})^2
+$$
+
+Reemplazamos SST y SSE;
+
+$$
+\frac{\frac{SST}{2-1}}{\frac{SSE}{N-2}} = \frac{\frac{(\bar{y_1}-\bar{y_2})^2}{\frac{1}{n_1} + \frac{1}{n_2}}}
+{S_{p}^2} = \frac{(\bar{y_1}-\bar{y_2})^2}{(S_{p}^2(\frac{1}{n_1} + \frac{1}{n_2}))}
+$$
+
+$$
+\therefore F_{(1,k)} = t_{k}^2
+$$
+
+# Formulas que nos ayudan con el enunciado 2 y 1:
+
+$$
+S{Y|X}^2 = \frac{SCE}{n-2} = (Residual \space standard \space error){2}
+$$
+
+$$ 
+S_{Y}^2 =\frac{n}{n-1}(\bar{Y}^2-(\bar{Y})^2)
+$$
+
+$$ 
+R^2 = 1- \frac{SCE}{SCT} = 1- \frac{(n-1)}{(n-2)}\frac{S_{Y|X}^2}{S_{Y}^2}
+$$
+
+$$ 
+T_{\hat{\alpha}} = \frac{\hat{\alpha}}{\sqrt{\hat{VAR(\hat\alpha)}}} 
+$$
+
+$$ 
+T_{\hat\beta} = \frac{\hat{\beta}}{\sqrt{\hat{VAR(\hat\beta)}}} 
+$$
+
+$$
+F = T_{\hat\beta}^2 = \frac{\frac{SCR}{1}}{\frac{SCE}{(n-2)}}
+$$
+
+$$
+SCT = SCR + SCE = n*(\bar{Y}^2 - (\bar{Y})^2)
+$$
+
+# Enunciado I
+
+1.  Significa que un $6.4\%$ de la variabilidad del coeficiente de gini es expplicada por el gasto de educación.
+
+2.  Prueba de significancia global del modelo
+
+$$
+H_0; \beta_i = o, \forall e \in 1 \dots k
+$$ $$
+H_a; \beta_i \neq 0
+$$
+
+$$
+F = \frac{\frac{SSR}{k}}{\frac{SSE}{N-k-1}} ~ F_{(k,n-k-1,\alpha)}
+$$
+
+Significa que al menos una de las variables del modelo es significativa para explicar la variable dependiente.
+
+3.  Prueba de significancia individual
+
+$$
+H_0; \beta_k = 0
+$$
+
+$$
+H_a; \beta_k \neq 0
+$$
+
+$$
+T = \frac{\hat{\beta_k}}{SE(\hat\beta_k)} ~ t_{student, (n-k-1)}
+$$
+
+$|t| > t_{crit} \to$ Rechazamos $H_0$ y concluimos que la variable k si aporta información (significativa) para predecirla variable dependiente.
+
+4.  Grafico
+
+```{r,message=FALSE,warning=FALSE}
+#install.packages("tydiverse")
+#install.packages("stargazer")
+library(tidyverse)
+library(remotes)
+library(stargazer)#Tablas
+library(tidyverse) #meta-package
+library(readxl) #Leer hojas de excel
+```
+
+```{r,message=FALSE,warning=FALSE,results='hide'}
+remotes::install_github("arcruz0/paqueteadp")
+library(paqueteadp)#datos
+data("bienestar")
+summary(bienestar)
+```
+
+```{r,message=FALSE,warning=FALSE}
+glimpse(bienestar)
+```
+
+```{r,message=FALSE,warning=FALSE}
+reg_1 <- lm(gini~gasto_educ,data = bienestar)
+summary(reg_1)
+```
+
+```{r, results='asis', message=FALSE, warning=FALSE}
+library(stargazer)
+stargazer(reg_1, type = "html")
+```
+
+```{r, results='asis', message=FALSE, warning=FALSE}
+
+ggplot(data = bienestar, # seleccionamos la base de datos
+       aes(x = gasto_educ, y = gini))+ # variables independientes y dependientes
+  geom_point(color = "black") + # los valores observados son graficados
+  geom_smooth(method = "lm", # La línea de regresión se superpone
+              se = F, # el área de error no se grafica con un IC del 95%
+              color = "orange")+ # color de la línea
+  labs (x = "Gasto en educación", y = "Desigualdad", title = "Coeficiente gini ~ Gasto en educación") 
+
+```
