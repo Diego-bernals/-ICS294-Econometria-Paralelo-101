@@ -1,0 +1,211 @@
+---
+title: "Ayudantía 4 - Repaso Certamen"
+author: 'Diego Bernal Soto: diego.bernals@usm.cl'
+output: 
+  tufte::tufte_html:
+    highlight: pygments
+link-citations: yes
+editor_options:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+## Vegetación en La comuna de Vitacura:
+
+En el siguiente estudio se tomaron imagenes satelitales para la comuna de Vitacura para obtener 5 años de estudio desde el 2020, con los cuals observaremos los efectos de las aréas verdes en la communa tomando un buffer con los parques de la comuna y ver su efectos en la temperatura de loslugares cercanos a y ver si existe alguna relación de si existe alguna correlación.
+
+Apliquemos un modelo de regresión lineal entre la temperatura y la distancia a los parques, para un mismo periodo de estudio.
+
+## Actividades.
+
+-   Realice una caracterización de la zona de interes a estudiar y con ello calcule el NDVI para cada sector de interes en el tiempo.
+
+-   Calcule un buffer con rangos de 100 hasta 5000 metros de distancia.
+
+-   Para cada iteracion rango tome una muestra de puntos para realizar el calculo de las distancias.
+
+-   Estime un modelo de regresión lineal para cada ventan de tiempo para ver la relación entre la distancia.
+
+```{r,message=FALSE,warning=FALSE}
+#First we have to apply a grid to the comuana and with that work.
+library(sp)
+library(sf)
+library(raster)
+library(tmap)
+library(ggplot2)
+library(geodata)
+library(viridis)
+library(cowplot)
+library(png)
+library(gridExtra)
+library(dplyr)
+library(spatstat)
+library(wesanderson)
+library(hrbrthemes)
+library(modeest)
+
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+alt <- st_read("./data/Vitacura.shp")
+tamaño_pixel_x_63m <- 0.0005694946
+tamaño_pixel_y_63m <- 0.0005694946
+cellsize = c(tamaño_pixel_x_63m, tamaño_pixel_y_63m)
+```
+
+```{r,message=FALSE,warning=FALSE}
+grid <- st_make_grid(alt, cellsize = c(tamaño_pixel_x_63m, tamaño_pixel_y_63m))
+#st_write(grid, "./data/grilla_poligonos.shp")
+plot(grid)
+```
+
+```{r,message=FALSE,warning=FALSE}
+gridcenters <- st_make_grid(grid, cellsize = cellsize, what = "centers")
+
+gridcenter <- gridcenters[grid]
+
+gdf <- st_sf(grid)
+
+#st_write(gdf,"./data/grilla_points.shp")
+```
+
+Discretizamos el raster de LST
+
+```{r,message=FALSE,warning=FALSE}
+
+lst_2020 <- raster("./imgs/2020_lst_Vita.tif")
+lst_2021 <- raster("./imgs/2021_lst_Vita.tif")
+lst_2022 <- raster("./imgs/2022_lst_Vita.tif")
+lst_2023 <- raster("./imgs/2023_lst_Vita.tif")
+lst_2024 <- raster("./imgs/2024_lst_Vita.tif")
+
+#puntos de los lst
+puntos <- as(lst_2020, "SpatialPointsDataFrame")
+lst <- as.data.frame(puntos)
+lst <- st_as_sf(lst, coords = c("x", "y"), crs = 4326)
+
+imgs <- list(lst_2020,lst_2021,lst_2022,lst_2023,lst_2024)
+
+año = 2020:2024
+
+#for (i in seq_along(imgs)){
+ # r <- imgs[[i]]
+  
+  #puntos <- as(r,"SpatialPointsDataFrame")
+  #puntos_sf <- st_as_sf(as.data.frame(puntos), coords = c("x", "y"), crs = 4326)
+  #st_write(puntos_sf,paste0("./data/lst_points_",año[i],".shp"))
+#}
+
+```
+
+Parques raster, criterio de contuinidad de policonos \> 30 poligonos conectados para que conformaran un parque, se encontraron solo 6.
+
+```{r,message=FALSE,warning=FALSE}
+
+lst_points <- st_read("./data/lst_points/lst_distance_2020.shp")
+lst_points <- lst_points %>% 
+  rename(lst = X2020__)
+glimpse(lst_points)
+
+```
+
+Ahora que tenemos la relación grafiquemos los primeros puntos para revisar la relación.
+
+```{r,message=FALSE,warning=FALSE}
+
+plot2 <- ggplot(lst_points, aes(x = lst)) + 
+  geom_histogram(aes(y = ..density..), colour = "orange", fill = "orange", alpha = 0.1, binwidth = 2)+
+  geom_density(alpha = .2, fill = "#FF6666", colour = 'red') +
+  theme_minimal() +
+  ggtitle('Distribución LST en C° en Vitacura')
+plot2
+
+
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+
+pl3 <- lst_points %>% 
+  filter(lst > 0) %>% ggplot(aes(x =distancia_ , y = lst)) +
+  geom_point(colour = '#B713A1', alpha = 0.5) + 
+  theme_minimal() + 
+  labs(title ='Grafico de dispersión Áreas verdes Vitacura 2020' ,x="Longitud en M", y='Median(LST°C)')
+pl3
+
+
+```
+
+Sampleo aleatorio en el tiempo
+
+```{r,message=FALSE,warning=FALSE}
+
+set.seed(707)
+
+sample <- lst_points %>% sample_n(size = 5000, replace = FALSE)
+sample$index_ri_1 <- NULL
+sample <- sample %>% filter(lst>0)
+
+#Agrupamiento para visualización
+lst_points_cluster <- lst_points %>%
+  mutate(
+    distancia_clase = case_when(
+      distancia_ <= 150 ~ "100",
+      distancia_ > 150 & distancia_ <= 250 ~ "200",
+      distancia_ > 250 ~ "300"
+    ),
+    distancia_clase = factor(distancia_clase, levels = c("100", "200", "300"))  )
+
+lst_points_cluster %>% filter(lst>0) %>% ggplot(aes(x=distancia_clase,y=lst,fill =distancia_clase))+ geom_violin(width=1.4) +  geom_boxplot(width=.2,alpha=0.2,color="white") +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) + theme_ipsum() +  
+  labs(title = 'Distribucion de la mediana para cada distancia',
+       xlab = 'Distancia en metros',
+       ylab = 'Median(LST°C)')
+
+
+
+```
+
+Modelo de regresión Lineal simple
+
+```{r,message=FALSE,warning=FALSE}
+
+
+model_1 <- lm(lst~distancia_,data = sample)
+predi <- model_1$fitted.values
+
+```
+
+```{r, results='asis', message=FALSE, warning=FALSE}
+library(stargazer)
+stargazer(model_1,Title="Modelo Áreas verdes", align=TRUE)
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+ggplot(sample,aes(distancia_)) +  geom_point(aes(y=lst),color =  'pink')  +          
+  geom_line(aes(y=predi),color = 'black') +
+  scale_color_discrete(name = "Y series", labels = c("predicted", "Real")) + 
+  ggtitle("Regresion Lineal Univariada") +
+  xlab("Distancia en metros") + 
+  ylab("Median(LST°C)")
+
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+lst_points_cluster %>%
+  filter(lst > 0) %>%
+  ggplot(aes(x = distancia_, y = lst)) +
+  geom_point(aes(color = as.factor(distancia_clase)), alpha = 0.4) +
+  geom_smooth(aes(group = distancia_clase),
+              method = 'lm', se = FALSE, size = 1.2) +
+  labs(title = 'Regresiones Lineales por distancia',
+    x = "Distancia en metros",
+    y = "Median (LST °C)",color = 'Labels') +
+  theme_minimal()
+
+
+```
