@@ -1,0 +1,177 @@
+---
+title: "Ayudantía 6"
+author: "Diego Bernal Soto"
+date: "2025-04-29"
+output: 
+  tufte::tufte_html:
+    highlight: pygments
+link-citations: yes
+editor_options:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+# Enunciado I
+
+Se encarga de realizar el aprovisionamiento para el catering de la business class en los aviones **Lasan**.
+Es por ello que, como equipo, deciden ir a visitar a los posibles candidatos para cerrar un contrato por un año en los destinos de Los Ángeles y Madrid.
+
+Para este estudio, utilizaron a la célula de **Shared Services** para que realizara un análisis histórico de los vinos tintos consumidos por los pasajeros en años anteriores, catalogándolos con una escala métrica que va del 0 al 8, siendo este último catalogado como de excelencia.
+
+Los data engineers se interesan en probar modelos que permitan explicar el comportamiento de los pasajeros.
+Para ello, cuentan con la siguiente información: una población de 1,539 observaciones.
+
+$$
+\begin{aligned}
+Y &= \text{Calidad de Vino} \\
+X_1 &= \text{Grados de alcohol contenidos} \\
+X_2 &= \text{Volatilidad del ácido (g/100 ml)} \\
+X_3 &= \text{Ácido cítrico (en porcentaje)} \\
+X_4 &= \text{pH del vino}
+\end{aligned}
+$$
+
+### Resultados Modelos Auxiliares
+
+| Mod | Variables      | Adjusted R-squared |
+|:---:|----------------|:------------------:|
+|  1  | X1             |       0.226        |
+|  2  | X1, X3         |       0.316        |
+|  3  | X2, X3         |       0.256        |
+|  4  | X1, X2, X4     |       0.321        |
+|  5  | X1, X2, X3, X4 |       0.322        |
+
+Por lo que se le pide que apoye con la inferencia al equipo, para esto elaboraron las siguientes preguntas:
+
+-   ¿Es significativo el aporte de la variable $X_3$ ?.
+    Utilice un nivel de significancia de 0.05.
+
+-   ¿Es significativo el aporte conjunto de $X_1$ y $X_4$.Utilice un nivel de significancia de 0.05.
+
+-   Se corrio una regresion auxiliar entre los residuales del modelo 1 y todas las variables Xs presentes en el modelo 5.
+    Utilizando el estadistico adecuado pruebe que es posible eliminar las variables $X_2$, $X_3$ y $X_4$.
+
+### Resultados Pregunta N°3
+
+| Estadísticas de la regresión        | Valores |
+|:------------------------------------|:-------:|
+| Coeficiente de correlación múltiple | 0.23488 |
+| Coeficiente de determinación $R^2$  | 0.05517 |
+| $R^2$ ajustado                      | 0.05279 |
+| Error típico                        | 0.69172 |
+| Observaciones                       |  1593   |
+
+**Tabla 1.** Regresión auxiliar
+
+## Enunciado II
+
+En base a la base de datos anterior plantee el modelo para predecir la variable dependiente calidad del vino en razon de las demas variables y realice los siguientes requerimientos.
+
+-   Revise el modelo anterior y identifique si existen outliers en la muestra, grafique y realice los test de hipotesis correspondiente.
+
+-   Realice el calculo de las distancias de Cook para ver si un punto es influyente o no, observe el grafico.
+
+-   Realice una prueba de independencia de los errores con un nivel de significancia de 0.05.
+
+-   Identifique si hay multicolinealidad entre los regresores de dos formas distintas.
+
+Ejercicio N°1
+
+```{r,message=FALSE,warning=FALSE}
+#Required libraries
+library(corrplot)
+library(mixlm)
+library(readxl)
+library(stargazer)
+library(paqueteadp)
+library(remotes)
+library(ggcorrplot)
+library(tidyverse)
+library(cowplot) 
+library(caret) 
+library(glmnet) 
+library(car)
+library(gghighlight)
+library(rlang)
+library(tidyverse)
+library(tidymodels)
+library(schrute)
+library(lubridate)
+library(knitr)
+library(ggsci)
+
+```
+
+```{r,message=FALSE,warning=FALSE}
+df_wine <- read_excel("./Ayudantía_6.xlsx", 
+                             sheet = "Datos")
+glimpse(df_wine)
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+
+mod1 <- lm(quality~ alcohol,data=df_wine)
+
+mod2 <- lm(quality~alcohol+volatile_acidity,data=df_wine)
+
+mod3 <- lm(quality~alcohol+ citric_acid,data = df_wine)
+mod4 <- lm(quality~ alcohol+volatile_acidity+pH,data=df_wine)
+
+mod5 <- lm(quality ~ alcohol+volatile_acidity+pH+citric_acid,data = df_wine)
+
+
+```
+
+```{r,message=FALSE,warning=FALSE, results = 'asis'}
+stargazer(mod1, mod2, mod3, mod4, mod5, 
+          title = "Modelo", 
+          align = TRUE, 
+          type = "html")
+```
+
+#Resolución enunciado 2
+
+```{r,message=FALSE,warning=FALSE}
+
+mod6 <- lm(quality~ fixed_acidity+volatile_acidity+citric_acid+residual_sugar+chlorides+free_sulfur_dioxide+total_sulfur_dioxide+
+             density+pH+sulphates+alcohol,data=df_wine)
+
+
+
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+outlierTest(mod6,cutoff=Inf, n.max=15)
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+influenceIndexPlot(mod6, vars="Bonf", las=1,id.col=palette()[3])
+
+```
+
+Prueba con algorimto backward
+
+```{r,message=FALSE,warning=FALSE,results='asis'}
+
+mod7 <- mixlm::backward(mod6, alpha=0.04)
+
+stargazer(mod6,mod7,title = "Ayud_6", align = TRUE, 
+          type = "html")
+```
+
+```{r,message=FALSE,warning=FALSE}
+cutoff <- 4 / (1593-9-2)  # Cota
+plot(mod7, which=4, cook.levels=cutoff, las=1)
+abline(h=cutoff, col="dodgerblue2")
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+df_wine %>% cor(method="pearson") %>% round(digits=2) -> mat_cor
+
+corrplot(mat_cor, type="upper", order="hclust", tl.col="black", tl.srt=45)
+```
